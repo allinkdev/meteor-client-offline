@@ -8,6 +8,8 @@ package meteordevelopment.meteorclient.utils.network;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import meteordevelopment.meteorclient.utils.other.JsonDateDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,9 +21,19 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Date;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class Http {
+    public static final Set<String> WHITELISTED_DOMAINS = Set.of(
+        "login.live.com",
+        "user.auth.xboxlive.com",
+        "xsts.auth.xboxlive.com",
+        "api.minecraftservices.com",
+        "api.mojang.com",
+        "sessionserver.mojang.com"
+    );
+    private static final Logger LOGGER = LoggerFactory.getLogger("Meteor HTTP Client");
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
 
     private static final Gson GSON = new GsonBuilder()
@@ -85,10 +97,21 @@ public class Http {
         }
 
         private <T> T _send(String accept, HttpResponse.BodyHandler<T> responseBodyHandler) {
+
             builder.header("Accept", accept);
             if (method != null) builder.method(method.name(), HttpRequest.BodyPublishers.noBody());
 
             try {
+                final HttpRequest request = builder.build();
+                final URI uri = request.uri();
+                final String host = uri.getHost();
+
+                LOGGER.info("Making request to {}!", host);
+
+                if (!WHITELISTED_DOMAINS.contains(host)) {
+                    return null;
+                }
+
                 var res = CLIENT.send(builder.build(), responseBodyHandler);
                 return res.statusCode() == 200 ? res.body() : null;
             } catch (IOException | InterruptedException e) {

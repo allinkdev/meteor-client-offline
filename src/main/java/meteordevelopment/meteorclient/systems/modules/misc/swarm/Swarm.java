@@ -17,7 +17,6 @@ import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Categories;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.util.Util;
 
 public class Swarm extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
@@ -70,9 +69,6 @@ public class Swarm extends Module {
 
         WButton stop = b.add(theme.button("Stop")).expandX().widget();
         stop.action = this::close;
-
-        WButton guide = list.add(theme.button("Guide")).expandX().widget();
-        guide.action = () -> Util.getOperatingSystem().open("https://github.com/MeteorDevelopment/meteor-client/wiki/Swarm-Guide");
 
         return list;
     }

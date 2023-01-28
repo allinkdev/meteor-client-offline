@@ -7,12 +7,7 @@ package meteordevelopment.meteorclient.utils.player;
 
 import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.addons.AddonManager;
-import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
-import meteordevelopment.meteorclient.gui.GuiThemes;
-import meteordevelopment.meteorclient.gui.screens.CommitsScreen;
-import meteordevelopment.meteorclient.utils.network.Http;
-import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 import meteordevelopment.meteorclient.utils.render.color.Color;
 import net.minecraft.client.util.math.MatrixStack;
 
@@ -36,23 +31,6 @@ public class TitleScreenCredits {
 
         // Sort by width (Meteor always first)
         credits.sort(Comparator.comparingInt(value -> value.sections.get(0).text.equals("Meteor Client ") ? Integer.MIN_VALUE : -value.width));
-
-        // Check for latest commits
-        MeteorExecutor.execute(() -> {
-            for (Credit credit : credits) {
-                if (credit.addon.getRepo() == null || credit.addon.getCommit() == null) continue;
-
-                GithubRepo repo = credit.addon.getRepo();
-                Response res = Http.get(String.format("https://api.github.com/repos/%s/branches/%s", repo.getOwnerName(), repo.branch())).sendJson(Response.class);
-
-                if (res != null && !credit.addon.getCommit().equals(res.commit.sha)) {
-                    synchronized (credit.sections) {
-                        credit.sections.add(1, new Section("*", RED));
-                        credit.calculateWidth();
-                    }
-                }
-            }
-        });
     }
 
     private static void add(MeteorAddon addon) {
@@ -89,24 +67,6 @@ public class TitleScreenCredits {
 
             y += mc.textRenderer.fontHeight + 2;
         }
-    }
-
-    public static boolean onClicked(double mouseX, double mouseY) {
-        int y = 3;
-        for (Credit credit : credits) {
-            int x = mc.currentScreen.width - 3 - credit.width;
-
-            if (mouseX >= x && mouseX <= x + credit.width && mouseY >= y && mouseY <= y + mc.textRenderer.fontHeight + 2) {
-                if (credit.addon.getRepo() != null && credit.addon.getCommit() != null) {
-                    mc.setScreen(new CommitsScreen(GuiThemes.get(), credit.addon));
-                    return true;
-                }
-            }
-
-            y += mc.textRenderer.fontHeight + 2;
-        }
-
-        return false;
     }
 
     private static class Credit {
