@@ -51,7 +51,7 @@ public class Http {
 
         public Request(Method method, String url) {
             try {
-                this.builder = HttpRequest.newBuilder().uri(new URI(url)).header("User-Agent", "Meteor Client");
+                this.builder = HttpRequest.newBuilder().uri(new URI(url));
                 this.method = method;
             } catch (URISyntaxException e) {
                 e.printStackTrace();
